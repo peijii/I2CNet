@@ -85,7 +85,7 @@ We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the
   
 - **4. Train and Evaluate I2CNet without DLS:**
   
-  Run `python train_I2CNetnoDLS.py` with parameters.
+  Run `python train_I2CNetnoDLS.py` with -c parameters.
 
   ```shell
   python train_I2CNetnoDLS.py
@@ -93,7 +93,7 @@ We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the
   
 - **5. Train and Evaluate I2CNet with DLS:**
   
-  Run `python train_I2CNetwithDLS.py` with parameters.
+  Run `python train_I2CNetwithDLS.py` with -c parameters.
 
   ```shell
   python train_I2CNetwithDLS.py
