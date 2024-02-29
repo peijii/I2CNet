@@ -1,1 +1,100 @@
 # I2CNet
+Code for methods in the paper: Intra- and Inter-Channel Deep Convolutional Neural Network with Dynamic Label Smoothing for Multichannel Biosignal Analysis
+## Architecture of I2CNet with Dynamic Label Smoothing
+![overall structure](fig/I2CNet.png)
+>Detailed architecture of our proposed neural network. The proposed architecture mainly consists of a `feature extractor`, a `label predictor`, and `label adjustor` which not included in a standard feed-forward neural network. During training phase, both label predictor and label adjustor can supervise the feature extractor.
+## Different components of I2CNET
+1. ***I2C Convolutional Block***
+<p align="center">
+  <img src="fig/I2CBlock.png" alt="模块1" width="45%">
+</p>
+
+>Structure of two kinds of I2C convolution block. (a) First layer convolution block. (b) Non-first layer convolution block.
+
+#### Code Implementation ####
+* `I2CNet/src/models/I2CNet.py`
+  * [class I2CBlockv1](https://github.com/peijii/I2CNet/blob/3a1ed3b9a705d81bc84e57c293f06cafda526826/src/models/I2CNet.py#L214): Implementation a I2C block of type (a).
+  * [class I2CBlockv2](https://github.com/peijii/I2CNet/blob/b200723549d3fb683add2da498ef16c03b407521/src/models/I2CNet.py#L273): Implementation a I2C block of type (b).
+
+2. ***I2C MSE Module***
+<p align="center">
+  <img src="fig/I2CMSE.png" alt="模块2" width="30%">
+</p>
+
+>Structure of I2C MSE module.
+
+#### Code Implementation ####
+* `I2CNet/src/models/I2CNet.py`
+  * [class I2CMSE](https://github.com/peijii/I2CNet/blob/3a1ed3b9a705d81bc84e57c293f06cafda526826/src/models/I2CNet.py#L344): Implementation of I2CMSE Module.
+
+3. ***I2C Attention Module***
+<p align="center">
+  <img src="fig/I2CAttention.png" alt="模块2" width="28%">
+</p>
+
+>Structure of I2C Attention module.
+
+#### Code Implementation ####
+* `I2CNet/src/models/I2CNet.py`
+  * [class I2CAttention](https://github.com/peijii/I2CNet/blob/2419d2ddfee55ed31d7abc3ec0e6bfa24ad32054/src/models/I2CNet.py#L540): Implementation of I2CAttention Module.
+ 
+4. ***Dynamic Label Smoothing Module***
+<p align="center">
+  <img src="fig/DLS.png" alt="模块2" width="32%">
+</p>
+
+>Structure of DLS module.
+
+#### Code Implementation ####
+* `I2CNet/src/models/DLS.py`
+  * [class DynamicLabelSmoothing](https://github.com/peijii/I2CNet/blob/fee1e503ce91ec84182c25c60bdd1c2759b6a3c6/src/models/DLS.py#L53): Implementation of Dynamic Label Smoothing Module.
+
+## Datasets
+We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the Ninapro-DB1.
+* The **ISRUC-S3 dataset** is available [here](https://sleeptight.isr.uc.pt/), and we provide a detailed pipeline to run I2CNet and I2CNet + DLS on it.
+* Tge **HEF dataset** is our previous research, and is available [here](https://github.com/peijii/a-layered-sensor-unit/tree/main/main_experiment/dataset).
+* The **Ninapro-DB1** is available [here](https://ninapro.hevs.ch/instructions/DB1.html).
+
+## Requirements
+
+* Python 3.8
+* Pytorch 1.11.0
+* sklearn 0.24.0
+
+## Usage 
+- **1. Download the ISRUC-S3 Dataset:**
+  
+  Download the ISRUC-S3 dataset from the following command.
+
+  ```shell
+  ./download_ISRUC_S3.sh
+  ```
+  
+- **2. Data preparation and processing:**
+  
+  To speed up the training process, save each sample as a separate .mat file.
+
+  ```shell
+  python preprocess.py
+  ```
+  
+- **3. Configuration:**
+  
+  We provide config files used in our research without DLS strategy `/config/ISRUCnoDLS.config` and with DLS strategy `/config/ISRUCwithDLS.config`. 
+
+  
+- **4. Train and Evaluate I2CNet without DLS:**
+  
+  Run `python train_I2CNetnoDLS.py` with parameters.
+
+  ```shell
+  python train_I2CNetnoDLS.py
+  ```
+  
+- **5. Train and Evaluate I2CNet with DLS:**
+  
+  Run `python train_I2CNetwithDLS.py` with parameters.
+
+  ```shell
+  python train_I2CNetwithDLS.py
+  ```
