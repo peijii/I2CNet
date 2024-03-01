@@ -88,7 +88,7 @@ We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the
   Run `python train_I2CNetnoDLS.py` with -c parameters.
 
   ```shell
-  python train_I2CNetnoDLS.py
+  python train_I2CNetnoDLS.py -c ./config/ISRUCnoDLS.config
   ```
   
 - **5. Train and Evaluate I2CNet with DLS:**
@@ -96,5 +96,5 @@ We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the
   Run `python train_I2CNetwithDLS.py` with -c parameters.
 
   ```shell
-  python train_I2CNetwithDLS.py
+  python train_I2CNetwithDLS.py -c ./config/ISRUCwithDLS.config
   ```
