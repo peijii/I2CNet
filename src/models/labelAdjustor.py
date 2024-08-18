@@ -49,10 +49,10 @@ class DLSBlock(nn.Module):
                 m.bias.data.zero_()
 
 
-class DynamicLabelSmoothing(nn.Module):
+class LabelAdjustor(nn.Module):
 
     def __init__(self, num_classes):
-        super(DynamicLabelSmoothing, self).__init__()
+        super(LabelAdjustor, self).__init__()
 
         self.block1 = DLSBlock(num_classes=num_classes, factor=3.0)
         self.block2 = DLSBlock(num_classes=num_classes, factor=4.0)

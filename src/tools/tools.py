@@ -38,7 +38,7 @@ class ModelTrainer(object):
 
             inputs, labels = inputs.to(device), labels.to(device)
 
-            outputs, _, _ = model(inputs)
+            outputs, _ = model(inputs)
 
             optimizer.zero_grad()
             loss = loss_f(outputs, labels)
@@ -84,7 +84,7 @@ class ModelTrainer(object):
 
             inputs, labels = inputs.to(device), labels.to(device)
 
-            outputs, _, _ = model(inputs)
+            outputs, _ = model(inputs)
             loss = loss_f(outputs, labels)
 
             _, predicted = torch.max(outputs.data, 1)
@@ -105,10 +105,10 @@ class ModelTrainer(object):
         return np.mean(loss_sigma), acc_avg, f1_avg
 
     @staticmethod
-    def train_dls(data_loader, model1, model2, ce_loss, kl_loss1, kl_loss2, optimizer1, optimizer2, epoch_id, device,
+    def train_dls(data_loader, model_e_p, model_e_a, ce_loss, kl_loss1, kl_loss2, optimizer1, optimizer2, epoch_id, device,
                   max_epoch, Beta, r_a, num_classes):
-        model1.train()
-        model2.train()
+        model_e_p.train()
+        model_e_a.train()
 
         conf_mat = np.zeros((num_classes, num_classes))
         loss_sigma = []
@@ -124,35 +124,35 @@ class ModelTrainer(object):
             inputs, labels, y_oneHot = inputs.to(device), labels.to(device), y_oneHot.to(device)
 
             # ----------------
-            # train main model
+            # train model_e_p
             # ----------------
 
-            outputs, extracted_features, _ = model1(inputs)
-            adjusted_label = model2(extracted_features, y_oneHot)
+            outputs, extracted_features = model_e_p(inputs)
+            adjusted_label = model_e_a(inputs, y_oneHot)
 
             optimizer1.zero_grad()
-            loss_1 = ce_loss(outputs, labels)
-            loss_2 = kl_loss1(F.log_softmax(outputs, -1), adjusted_label)
-            loss = (1 - Beta) * loss_1 + Beta * loss_2
+            loss_hard = ce_loss(outputs, labels)
+            loss_soft = kl_loss1(F.log_softmax(outputs, -1), adjusted_label)
+            model_e_p_total_loss = (1 - Beta) * loss_hard + Beta * loss_soft
 
-            loss.backward(retain_graph=True)
+            model_e_p_total_loss.backward(retain_graph=True)
             optimizer1.step()
 
             # ----------------
-            # train auxiliary model2
+            # train model_e_a
             # ----------------
-            adjusted_label1 = model2(extracted_features, y_oneHot)
-            _, extracted_features, embedded_out = model1(inputs)
+            adjusted_label = model_e_a(inputs, y_oneHot)
+            _, extracted_features = model_e_p(inputs)
 
             optimizer2.zero_grad()
             y_adj_true = ModelTrainer.area(extracted_features, y_oneHot, Ra=r_a)
-            loss_3 = kl_loss2(torch.log(adjusted_label1), y_adj_true)
-            loss_3.backward(inputs=list(model2.parameters()))
-
+            loss_adj = kl_loss2(torch.log(adjusted_label), y_adj_true)
+            model_e_a_total_loss = loss_adj + 1 * model_e_p_total_loss.detach()
+            model_e_a_total_loss.backward(inputs=list(model_e_a.parameters()))
             optimizer2.step()
 
             if idx == 1:
-                a = adjusted_label1.cpu().detach().numpy()
+                a = adjusted_label.cpu().detach().numpy()
                 b = y_oneHot
 
             # 统计预测值
@@ -166,7 +166,7 @@ class ModelTrainer(object):
                 conf_mat[cate_i, pre_i] += 1.
 
             # 统计loss值
-            loss_sigma.append(loss.item())
+            loss_sigma.append(model_e_p_total_loss.item())
             acc_avg = conf_mat.trace() / conf_mat.sum()
             f1_avg = f1_score(all_labels, all_predictions, average="weighted")
 
@@ -179,9 +179,9 @@ class ModelTrainer(object):
         return np.mean(loss_sigma), acc_avg, f1_avg
 
     @staticmethod
-    def valid_dls(data_loader, model1, model2, loss1, loss2, device, Beta, num_classes):
-        model1.eval()
-        model2.eval()
+    def valid_dls(data_loader, model_e_p, model_e_a, loss1, loss2, device, Beta, num_classes):
+        model_e_p.eval()
+        model_e_a.eval()
 
         conf_mat = np.zeros((num_classes, num_classes))
         loss_sigma = []
@@ -198,12 +198,12 @@ class ModelTrainer(object):
             y_oneHot = ModelTrainer.onehot(labels.shape[0], labels, classes=num_classes)
             inputs, labels, y_oneHot = inputs.to(device), labels.to(device), y_oneHot.to(device)
 
-            outputs, extracted_features, _ = model1(inputs)
-            adjusted_label = model2(extracted_features, y_oneHot)
+            outputs, extracted_features = model_e_p(inputs)
+            adjusted_label = model_e_a(inputs, y_oneHot)
 
-            loss_1 = loss1(outputs, labels)
-            loss_2 = loss2(F.log_softmax(outputs, -1), adjusted_label)
-            loss = Beta * loss_1 + (1 - Beta) * loss_2
+            loss_hard = loss1(outputs, labels)
+            loss_soft = loss2(F.log_softmax(outputs, -1), adjusted_label)
+            loss = Beta * loss_hard + (1 - Beta) * loss_soft
 
             # 统计预测值
             _, predicted = torch.max(outputs.data, 1)

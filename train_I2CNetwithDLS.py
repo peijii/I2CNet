@@ -2,8 +2,12 @@
 from sklearn.model_selection import KFold
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from src.models.I2CNet import *
-from src.models.DLS import *
+from src.models.featureExtractor import *
+from src.models.labelPredictor import *
+from src.models.labelAdjustor import *
+from src.models.model_e_p import *
+from src.models.model_e_a import *
+from src.models.model import *
 from src.tools.tools import *
 from src.utils.utils import ISRUCS3, ReadConfig
 from src.utils.augmentations import *
@@ -32,15 +36,15 @@ if __name__ == '__main__':
     Fold           = int(cfgTrain["Fold"])
 
     # parameters for models
-    channel        = int(cfgModel["channel"])
-    num_classes    = int(cfgModel["num_classes"])
-    mse_b1         = int(cfgModel["mse_b1"])
-    mse_b2         = int(cfgModel["mse_b2"])
-    mse_b3         = int(cfgModel["mse_b3"])
-    expansion_rate = int(cfgModel["expansion_rate"])
-    reduction_rate = int(cfgModel["reduction_rate"])
-    block1_num     = int(cfgModel["block1_num"])
-    block2_num     = int(cfgModel["block2_num"])
+    channel        = 10
+    num_classes    = 5
+    mse_b1         = 5
+    mse_b2         = 11
+    mse_b3         = 21
+    expansion_rate = 2
+    reduction_rate = 4
+    block1_num     = 1
+    block2_num     = 1
 
     data_paths = [os.path.join(Dataset_path, i) for i in os.listdir(Dataset_path)]
 
@@ -78,21 +82,25 @@ if __name__ == '__main__':
                 cell2_num=block2_num
         )
 
-        DLS_model = DynamicLabelSmoothing(num_classes=num_classes)
+        model_e_p = Main_model.model_e_p
+        model_e_a = Main_model.model_e_a
 
-        Main_model.to(device)
-        DLS_model.to(device)
+        model_e_p.to(device)
+        model_e_a.to(device)
 
         # ======================== step 3/5 Loss function ==============================
-        ce_loss = nn.CrossEntropyLoss()
-        kl_loss1 = nn.KLDivLoss(reduction='batchmean')
-        kl_loss2 = nn.KLDivLoss(reduction='batchmean')
+        model_e_p_ce_loss = nn.CrossEntropyLoss()
+        model_e_p_kl_loss = nn.KLDivLoss(reduction='batchmean')
+        model_e_a_kl_loss = nn.KLDivLoss(reduction='batchmean')
 
         # ======================== step 4/5 Optimizers ==============================
-        main_optimizer = optim.AdamW(Main_model.parameters(), lr=learning_rate, weight_decay=1e-4)
-        auxiliary_optimizer = optim.AdamW(DLS_model.parameters(), lr=learning_rate, weight_decay=1e-4)
+        model_e_p_optimizer = optim.AdamW(model_e_p.parameters(), lr=learning_rate, weight_decay=1e-4)
+        model_e_a_optimizer = optim.AdamW(model_e_a.parameters(), lr=learning_rate, weight_decay=1e-4)
 
-        scheduler = optim.lr_scheduler.MultiStepLR(main_optimizer, gamma=0.8, milestones=[20, 40, 60, 80])
+        scheduler1 = optim.lr_scheduler.MultiStepLR(model_e_p_optimizer, gamma=0.8, milestones=[int(num_epochs * 0.2), int(num_epochs * 0.4), 
+                                                                                                        int(num_epochs * 60), int(num_epochs * 80)])
+        scheduler2 = optim.lr_scheduler.MultiStepLR(model_e_a_optimizer, gamma=0.8, milestones=[int(num_epochs * 0.2), int(num_epochs * 0.4), 
+                                                                                                        int(num_epochs * 60), int(num_epochs * 80)])
 
         # ======================== step 5/5 Train ==============================
         loss_rec = {"trian": [], "valid": []}
@@ -105,9 +113,9 @@ if __name__ == '__main__':
             if epoch < pre_epoch:
                 loss_train, acc_train, f1_train = ModelTrainer.train(
                     data_loader=train_loader,
-                    model=Main_model,
-                    loss_f=ce_loss,
-                    optimizer=main_optimizer,
+                    model=model_e_p,
+                    loss_f=model_e_p_ce_loss,
+                    optimizer=model_e_p_optimizer,
                     epoch_id=epoch,
                     device=device,
                     max_epoch=num_epochs,
@@ -115,21 +123,22 @@ if __name__ == '__main__':
                 )
                 loss_val, acc_valid, f1_valid = ModelTrainer.valid(
                     data_loader=test_loader,
-                    model=Main_model,
-                    loss_f=ce_loss,
+                    model=model_e_p,
+                    loss_f=model_e_p_ce_loss,
                     device=device,
                     num_classes=num_classes
                 )
+                scheduler1.step()
             else:
                 loss_train, acc_train, f1_train = ModelTrainer.train_dls(
                     data_loader=train_loader,
-                    model1=Main_model,
-                    model2=DLS_model,
-                    ce_loss=ce_loss,
-                    kl_loss1=kl_loss1,
-                    kl_loss2=kl_loss2,
-                    optimizer1=main_optimizer,
-                    optimizer2=auxiliary_optimizer,
+                    model_e_p=model_e_p,
+                    model_e_a=model_e_a,
+                    ce_loss=model_e_p_ce_loss,
+                    kl_loss1=model_e_p_kl_loss,
+                    kl_loss2=model_e_a_kl_loss,
+                    optimizer1=model_e_p_optimizer,
+                    optimizer2=model_e_a_optimizer,
                     epoch_id=epoch,
                     device=device,
                     max_epoch=num_epochs,
@@ -139,14 +148,16 @@ if __name__ == '__main__':
                 )
                 loss_val, acc_valid, f1_valid = ModelTrainer.valid_dls(
                     data_loader=test_loader,
-                    model1=Main_model,
-                    model2=DLS_model,
-                    loss1=ce_loss,
-                    loss2=kl_loss1,
+                    model_e_p=model_e_p,
+                    model_e_a=model_e_a,
+                    loss1=model_e_p_ce_loss,
+                    loss2=model_e_p_kl_loss,
                     device=device,
                     Beta=Beta,
                     num_classes=num_classes
                 )
+                scheduler1.step()
+                scheduler2.step()
 
             if acc_valid > best_acc:
                 best_acc = acc_valid
@@ -158,8 +169,6 @@ if __name__ == '__main__':
                   "Best Acc: {:.2%} Best F1: {:.2%}".format(
                 epoch+1, num_epochs, acc_train, acc_valid, loss_train, loss_val, f1_train, f1_valid, best_acc, best_f1
             ))
-
-            scheduler.step()
 
         Fold_acc.append(best_acc)
         Fold_f1.append(best_f1)

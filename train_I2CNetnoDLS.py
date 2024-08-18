@@ -2,7 +2,10 @@
 from sklearn.model_selection import KFold
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from src.models.I2CNet import *
+from src.models.featureExtractor import *
+from src.models.labelPredictor import *
+from src.models.model_e_p import *
+from src.models.model import *
 from src.tools.tools import *
 from src.utils.utils import ISRUCS3, ReadConfig
 from src.utils.augmentations import *
@@ -63,7 +66,7 @@ if __name__ == '__main__':
         test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=False, num_workers=36)
 
         # ======================== step 2/5 Model ==============================
-        model = I2CNet(
+        Total_model = I2CNet(
                 in_planes=channel,
                 num_classes=num_classes,
                 mse_b1=mse_b1,
@@ -74,13 +77,15 @@ if __name__ == '__main__':
                 cell1_num=block1_num,
                 cell2_num=block2_num
         )
-        model.to(device)
+
+        model_e_p = Total_model.model_e_p
+        model_e_p.to(device)
 
         # ======================== step 3/5 Loss function ==============================
-        main_criterion = nn.CrossEntropyLoss()
+        model_e_p_ce_loss = nn.CrossEntropyLoss()
         # ======================== step 4/5 Optimizers ==============================
-        main_optimizer = optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)
-        scheduler = optim.lr_scheduler.MultiStepLR(main_optimizer, gamma=0.8, milestones=[20, 40, 60, 80])
+        model_e_p_optimizer = optim.AdamW(model_e_p.parameters(), lr=learning_rate, weight_decay=1e-4)
+        scheduler = optim.lr_scheduler.MultiStepLR(model_e_p_optimizer, gamma=0.8, milestones=[20, 40, 60, 80])
 
         # ======================== step 5/5 Train ==============================
         loss_rec = {"trian": [], "valid": []}
@@ -92,9 +97,9 @@ if __name__ == '__main__':
             # train
             loss_train, acc_train, f1_train = ModelTrainer.train(
                 data_loader=train_loader,
-                model=model,
-                loss_f=main_criterion,
-                optimizer=main_optimizer,
+                model=model_e_p,
+                loss_f=model_e_p_ce_loss,
+                optimizer=model_e_p_optimizer,
                 epoch_id=epoch,
                 device=device,
                 max_epoch=num_epochs,
@@ -103,8 +108,8 @@ if __name__ == '__main__':
             # valid
             loss_val, acc_valid, f1_valid = ModelTrainer.valid(
                 data_loader=test_loader,
-                model=model,
-                loss_f=main_criterion,
+                model=model_e_p,
+                loss_f=model_e_p_ce_loss,
                 device=device,
                 num_classes=num_classes
             )

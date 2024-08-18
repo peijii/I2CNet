@@ -565,7 +565,7 @@ class I2CAttention(nn.Module):
         return out
 
 
-# ===================== Cell of I2CNet ==========================
+# ===================== Cell of FeatureExtractor ==========================
 class Cell(nn.Module):
 
     def __init__(
@@ -634,13 +634,13 @@ class Cell(nn.Module):
             return self.cells(x)
 
 
-# =================== I2CNet ======================
-class I2CNet(nn.Module):
+# =================== FeatureExtractor ======================
+class FeatureExtractor(nn.Module):
 
     def __init__(
             self,
             in_planes: int = 10,
-            num_classes: int = 52,
+            num_classes: int = 5,
             mse_b1: int = 5,
             mse_b2: int = 11,
             mse_b3: int = 21,
@@ -697,20 +697,7 @@ class I2CNet(nn.Module):
 
         self.out_planes = self.in_planes
         self.adaptiveAvgPool1d = nn.AdaptiveAvgPool1d(50)
-
-        # decision layers
-        self.dc_conv1 = nn.Conv1d(self.out_planes, num_classes, kernel_size=1)
-        self.dc_bn1 = nn.BatchNorm1d(num_classes)
-        self.dc_se1 = nn.SELU()
-
-        self.dc_conv2 = nn.Conv1d(num_classes, 64, kernel_size=1)
-        self.dc_bn2 = nn.BatchNorm1d(64)
-        self.dc_se2 = nn.SELU()
-
-        self.dc_conv3 = nn.Conv1d(64, num_classes, kernel_size=1)
-        self.dc_bn3 = nn.BatchNorm1d(num_classes)
-
-        self.adaptiveAvgPool1d_2 = nn.AdaptiveAvgPool1d(1)
+        self.feature_out = nn.Conv1d(self.out_planes, num_classes, kernel_size=1)
 
     def _forward_imp(self, x: torch.Tensor):
 
@@ -719,22 +706,9 @@ class I2CNet(nn.Module):
         out = self.cell1(out)
         out = self.cell2(out)
         out = self.adaptiveAvgPool1d(out)
+        feature_out = self.feature_out(out)
 
-        feature_out = self.dc_conv1(out)
-        out = self.dc_bn1(feature_out)
-        out = self.dc_se1(out)
-
-        embedded_out = self.dc_conv2(out)
-        out = self.dc_bn2(embedded_out)
-        out = self.dc_se2(out)
-
-        out = self.dc_conv3(out)
-        out = self.dc_bn3(out)
-
-        out = self.adaptiveAvgPool1d_2(out)
-        out = torch.flatten(out, 1)
-
-        return out, torch.max(feature_out, dim=-1).values, torch.max(embedded_out, dim=1).values
+        return feature_out, torch.max(feature_out, dim=-1).values
 
     def forward(self, x: torch.Tensor):
         return self._forward_imp(x)
