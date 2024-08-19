@@ -12,9 +12,9 @@ Code for methods in the paper: Intra- and Inter-Channel Deep Convolutional Neura
 >Structure of two kinds of I2C convolution block. (a) First layer convolution block. (b) Non-first layer convolution block.
 
 #### Code Implementation ####
-* `I2CNet/src/models/I2CNet.py`
-  * [class I2CBlockv1](https://github.com/peijii/I2CNet/blob/6a58b34b6941898bc0fe8c094e40ecabffc0f148/src/models/I2CNet.py#L211): Implementation a I2C block of type (a).
-  * [class I2CBlockv2](https://github.com/peijii/I2CNet/blob/6a58b34b6941898bc0fe8c094e40ecabffc0f148/src/models/I2CNet.py#L270): Implementation a I2C block of type (b).
+* `I2CNet/src/models/featureExtractor.py`
+  * [class I2CBlockv1](https://github.com/peijii/I2CNet/blob/d5b6784528e06d974fd220a3ab520ad3dc98edbe/src/models/featureExtractor.py#L211): Implementation a I2C block of type (a).
+  * [class I2CBlockv2](https://github.com/peijii/I2CNet/blob/d5b6784528e06d974fd220a3ab520ad3dc98edbe/src/models/featureExtractor.py#L270): Implementation a I2C block of type (b).
 
 2. ***I2C MSE Module***
 <p align="center">
@@ -24,8 +24,8 @@ Code for methods in the paper: Intra- and Inter-Channel Deep Convolutional Neura
 >Structure of I2C MSE module.
 
 #### Code Implementation ####
-* `I2CNet/src/models/I2CNet.py`
-  * [class I2CMSE](https://github.com/peijii/I2CNet/blob/6a58b34b6941898bc0fe8c094e40ecabffc0f148/src/models/I2CNet.py#L341): Implementation of I2CMSE Module.
+* `I2CNet/src/models/featureExtractor.py`
+  * [class I2CMSE](https://github.com/peijii/I2CNet/blob/d5b6784528e06d974fd220a3ab520ad3dc98edbe/src/models/featureExtractor.py#L341): Implementation of I2CMSE Module.
 
 3. ***I2C Attention Module***
 <p align="center">
@@ -35,8 +35,8 @@ Code for methods in the paper: Intra- and Inter-Channel Deep Convolutional Neura
 >Structure of I2C Attention module.
 
 #### Code Implementation ####
-* `I2CNet/src/models/I2CNet.py`
-  * [class I2CAttention](https://github.com/peijii/I2CNet/blob/6a58b34b6941898bc0fe8c094e40ecabffc0f148/src/models/I2CNet.py#L539): Implementation of I2CAttention Module.
+* `I2CNet/src/models/featureExtractor.py`
+  * [class I2CAttention](https://github.com/peijii/I2CNet/blob/d5b6784528e06d974fd220a3ab520ad3dc98edbe/src/models/featureExtractor.py#L539): Implementation of I2CAttention Module.
  
 4. ***Dynamic Label Smoothing Module***
 <p align="center">
@@ -46,8 +46,8 @@ Code for methods in the paper: Intra- and Inter-Channel Deep Convolutional Neura
 >Structure of DLS module.
 
 #### Code Implementation ####
-* `I2CNet/src/models/DLS.py`
-  * [class DynamicLabelSmoothing](https://github.com/peijii/I2CNet/blob/6a58b34b6941898bc0fe8c094e40ecabffc0f148/src/models/DLS.py#L52): Implementation of Dynamic Label Smoothing Module.
+* `I2CNet/src/models/labelAdjustor.py`
+  * [class DynamicLabelSmoothing](https://github.com/peijii/I2CNet/blob/d5b6784528e06d974fd220a3ab520ad3dc98edbe/src/models/labelAdjustor.py#L52): Implementation of Dynamic Label Smoothing Module.
 
 ## Datasets
 We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the Ninapro-DB1.
