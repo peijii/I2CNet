@@ -47,7 +47,7 @@ Code for methods in the paper: Intra- and Inter-Channel Deep Convolutional Neura
 
 #### Code Implementation ####
 * `I2CNet/src/models/labelAdjustor.py`
-  * [class DynamicLabelSmoothing](https://github.com/peijii/I2CNet/blob/d5b6784528e06d974fd220a3ab520ad3dc98edbe/src/models/labelAdjustor.py#L52): Implementation of Dynamic Label Smoothing Module.
+  * [class LabelAdjustor](https://github.com/peijii/I2CNet/blob/d5b6784528e06d974fd220a3ab520ad3dc98edbe/src/models/labelAdjustor.py#L52): Implementation of Dynamic Label Smoothing Module.
 
 ## Datasets
 We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the Ninapro-DB1.
