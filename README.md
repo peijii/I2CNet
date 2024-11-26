@@ -51,7 +51,7 @@ Code for methods in the paper: Intra- and Inter-Channel Deep Convolutional Neura
 
 ## Datasets
 We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the Ninapro-DB1.
-* The **ISRUC-S3 dataset** is available [here](https://sleeptight.isr.uc.pt/), and we provide a detailed pipeline to run I2CNet and I2CNet + DLS on it.
+* The **ISRUC-S3 dataset** is available [here](https://sleeptight.isr.uc.pt/).
 * Tge **HEF dataset** is our previous research, and is available [here](https://github.com/peijii/a-layered-sensor-unit/tree/main/main_experiment/dataset).
 * The **Ninapro-DB1** is available [here](https://ninapro.hevs.ch/instructions/DB1.html).
 
