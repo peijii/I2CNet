@@ -99,7 +99,7 @@ We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the
   python train_I2CNetwithDLS.py -c ./config/ISRUCwithDLS.config
   ```
 ## Online performance
->We tested the online recognition performance of I2CNet on a 10-class gesture recognition task using a 4-channel EMG sensor armband. You can watch the video demo here: [Video](https://www.youtube.com/shorts/FmIPU1v4RC4)
+>We tested the online recognition performance of I2CNet on a 10-class gesture recognition task using a 4-channel EMG sensor armband. You can watch the video demo here: [Video](https://www.youtube.com/shorts/FmIPU1v4RC4?feature=shared)
 
 # Citation
 If you find the code useful, please consider citing our paper using the following BibTeX entry. 
