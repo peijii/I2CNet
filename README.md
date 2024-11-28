@@ -98,3 +98,26 @@ We evaluate our proposed method on the ISRUC-S3 dataset, the HEF dataset and the
   ```shell
   python train_I2CNetwithDLS.py -c ./config/ISRUCwithDLS.config
   ```
+## Online performance
+>We tested the online recognition performance of I2CNet on a 10-class gesture recognition task using a 4-channel EMG sensor armband.
+
+<video width='900' height='400' controls>
+  <source src='video.mp4' type="video/mp4">
+</video>
+
+
+
+
+
+
+# References
+
+```latex
+@inproceedings{jia2020sst,
+  title={SST-EmotionNet: Spatial-spectral-temporal based attention 3D dense network for EEG emotion recognition},
+  author={Jia, Ziyu and Lin, Youfang and Cai, Xiyang and Chen, Haobin and Gou, Haijun and Wang, Jing},
+  booktitle={Proceedings of the 28th ACM International Conference on Multimedia},
+  pages={2909--2917},
+  year={2020}
+}
+```

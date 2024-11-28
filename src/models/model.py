@@ -18,9 +18,21 @@ class I2CNet():
             reduction_rate: int = 4,
             cell1_num: int = 1,
             cell2_num: int = 1,
+            v2_switch: bool = False,
+            attention_switch: bool = False,
     ) -> None:
-        self.feature_extractor = FeatureExtractor(in_planes=in_planes, num_classes=num_classes, mse_b1=mse_b1, mse_b2=mse_b2, mse_b3=mse_b3,
-                                                  expansion_rate=expansion_rate, reduction_rate=reduction_rate, cell1_num=cell1_num, cell2_num=cell2_num)
+        self.feature_extractor = FeatureExtractor(in_planes=in_planes, 
+                                                  num_classes=num_classes, 
+                                                  mse_b1=mse_b1, 
+                                                  mse_b2=mse_b2, 
+                                                  mse_b3=mse_b3,
+                                                  expansion_rate=expansion_rate, 
+                                                  reduction_rate=reduction_rate, 
+                                                  cell1_num=cell1_num, 
+                                                  cell2_num=cell2_num, 
+                                                  v2_switch=v2_switch,
+                                                  attention_swith=attention_switch)
+        
         self.label_predictor = LabelPredictor(num_classes=num_classes)
         self.label_adjustor = LabelAdjustor(num_classes=num_classes)
         self.model_e_p = self.build_model_e_p()

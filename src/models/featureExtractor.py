@@ -578,7 +578,9 @@ class Cell(nn.Module):
             expansion_rate: int = 2,
             reduction_rate: int = 4,
             nums: int = 1,
-            skip: bool = False
+            skip: bool = False,
+            v2_switch: bool = False,
+            attention_switch: bool = False
     ) -> None:
         super(Cell, self).__init__()
         self.in_planes = in_planes
@@ -588,19 +590,22 @@ class Cell(nn.Module):
         self.mse_b3 = mse_b3
         self.expansion_rate = expansion_rate
         self.reduction_rate = reduction_rate
-        self.cells = self._make_cells(nums)
         self.skip = skip
+        self.v2_switch = v2_switch
+        self.attention_switch = attention_switch
+        self.cells = self._make_cells(nums)
 
     def _make_cells(self, nums: int) -> nn.Sequential:
         layers = []
         for i in range(nums):
-            # layers.append(I2CBlockv2(
-            #     in_planes=self.in_planes,
-            #     expansion_rate=1,
-            #     intra_kernel_size=3,
-            #     inter_kernel_size=1,
-            #     groups=self.groups
-            # ))
+            if self.v2_switch:
+                layers.append(I2CBlockv2(
+                    in_planes=self.in_planes,
+                    expansion_rate=1,
+                    intra_kernel_size=3,
+                    inter_kernel_size=1,
+                    groups=self.groups
+                ))
             layers.append(I2CMSE(
                 in_planes=self.in_planes,
                 groups=self.groups,
@@ -614,11 +619,12 @@ class Cell(nn.Module):
                 in_planes=self.in_planes,
                 groups=self.groups
             ))
-            layers.append(I2CAttention(
-                in_planes=self.in_planes,
-                reduction=self.reduction_rate,
-                groups=self.groups
-            ))
+            if self.attention_switch:
+                layers.append(I2CAttention(
+                    in_planes=self.in_planes,
+                    reduction=self.reduction_rate,
+                    groups=self.groups
+                ))
         return nn.Sequential(*layers)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -648,7 +654,9 @@ class FeatureExtractor(nn.Module):
             reduction_rate: int = 4,
             cell1_num: int = 1,
             cell2_num: int = 1,
-            norm_layer: Optional[Callable[..., nn.Module]] = None
+            norm_layer: Optional[Callable[..., nn.Module]] = None,
+            v2_switch: bool = False,
+            attention_swith : bool = False
     ) -> None:
         super().__init__()
         if norm_layer is None:
@@ -678,7 +686,9 @@ class FeatureExtractor(nn.Module):
             expansion_rate=self.mse_expansion,
             reduction_rate=self.attention_reduction,
             nums=cell1_num,
-            skip=False
+            skip=False,
+            v2_switch=v2_switch,
+            attention_switch=attention_swith
         )
         self.in_planes = self.cell1.in_planes
 
@@ -691,7 +701,9 @@ class FeatureExtractor(nn.Module):
             expansion_rate=self.mse_expansion,
             reduction_rate=self.attention_reduction,
             nums=cell2_num,
-            skip=False
+            skip=False,
+            v2_switch=v2_switch,
+            attention_switch=attention_swith
         )
         self.in_planes = self.cell2.in_planes
 
@@ -712,3 +724,4 @@ class FeatureExtractor(nn.Module):
 
     def forward(self, x: torch.Tensor):
         return self._forward_imp(x)
+    
