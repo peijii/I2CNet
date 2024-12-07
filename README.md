@@ -106,15 +106,13 @@ If you find the code useful, please consider citing our paper using the followin
 
 
 ```latex
-@INPROCEEDINGS{10446938,
-  author={Chen, Peiji and Li, Dian and Tang, Yifan and Togo, Shunta and Yokoi, Hiroshi and Jiang, Yinlai},
-  booktitle={ICASSP 2024 - 2024 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)}, 
-  title={Dynamic Label Smoothing Strategy for Biosignal Classification}, 
+@article{chen2024intra,
+  title={Intra-and inter-channel deep convolutional neural network with dynamic label smoothing for multichannel biosignal analysis},
+  author={Chen, Peiji and Li, Wenyang and Tang, Yifan and Togo, Shunta and Yokoi, Hiroshi and Jiang, Yinlai},
+  journal={Neural Networks},
+  pages={106960},
   year={2024},
-  volume={},
-  number={},
-  pages={1556-1560},
-  keywords={Human computer interaction;Smoothing methods;Source coding;Neural networks;Pattern classification;Signal processing;Robustness;Biological signals;label smoothing},
-  doi={10.1109/ICASSP48485.2024.10446938}}
+  publisher={Elsevier}
+}
 
 ```
